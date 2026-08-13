@@ -8,13 +8,13 @@ import { useRef, useState } from "react"
 const videos = [
   {
     label: "1",
-    src: "https://b9gv7ayfo7fnz2sa.public.blob.vercel-storage.com/songs/1.mp4",
+    src: "https://2zrygdluatzpeedr.public.blob.vercel-storage.com/videos_compressed/1.mp4",
     mood: "City",
   },
   {
     label: "2",
     // Switched to public subdomain and pointed to your second video asset
-    src: "https://vercel-storage.com",
+    src: "https://2zrygdluatzpeedr.public.blob.vercel-storage.com/videos_compressed/2.mp4",
     mood: "Scenic",
   },
 ]
