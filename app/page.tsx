@@ -43,7 +43,7 @@ export default function Page() {
   return (
     <main className="relative flex h-screen w-full flex-col overflow-hidden bg-zinc-950 font-sans text-white">
       {/* Background Layer */}
-      <div className="absolute inset-0 z-0">
+      <div className="absolute inset-0 z-0 bg-zinc-950">
         <video
           ref={videoRef}
           src={videos[activeVideo].src}
@@ -51,6 +51,8 @@ export default function Page() {
           onEnded={handleVideoEnded}
           muted
           playsInline
+          preload="metadata"
+          poster="https://b9gv7ayfo7fnz2sa.private.blob.vercel-storage.com/background.png?vercel-blob-delegation=eyJzdG9yZUlkIjoic3RvcmVfYjlndjdBWUZvN2ZOWjJzYSIsIm93bmVySWQiOiJ0ZWFtX0g4NFdwalpENWpMTG40eEVlRmxBVG0yRiIsInBhdGhuYW1lIjoiKiIsIm9wZXJhdGlvbnMiOlsiZ2V0IiwiaGVhZCJdLCJ2YWxpZFVudGlsIjoxNzg2NzAwMDA2MzM4LCJpYXQiOjE3ODY2NTY4MDY1NzJ9.zNezCKkIY26Rn5EdJ8SQYmSqo6VDCnZg5bcmsPjEZ3M&vercel-blob-signature=p5aPeKtMHUah4viBbXHAliQCXbzRScZMY4IP_HdTnfA"
           className="h-full w-full scale-105 object-cover transition-all duration-700"
         />
         {/* Vignette / Gradient */}
