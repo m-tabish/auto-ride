@@ -1,5 +1,5 @@
 "use client"
-
+import { Song, playlist as staticPlaylist } from "@/components/player/playlist"
 import {
   ListDashes,
   Pause,
@@ -10,8 +10,6 @@ import {
   SpeakerHigh,
 } from "@phosphor-icons/react"
 import { useEffect, useRef, useState } from "react"
-import { Song, playlist as staticPlaylist } from "@/components/player/playlist"
-
 export function MusicPlayer() {
   const [playlist, setPlaylist] = useState<Song[]>(staticPlaylist)
   const [isPlaying, setIsPlaying] = useState(false)
