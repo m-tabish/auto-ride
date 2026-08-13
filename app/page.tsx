@@ -8,12 +8,13 @@ import { useRef, useState } from "react"
 const videos = [
   {
     label: "1",
-    src: "https://b9gv7ayfo7fnz2sa.private.blob.vercel-storage.com/songs/1.mp4?vercel-blob-valid-until=1786655018310&vercel-blob-delegation=eyJzdG9yZUlkIjoic3RvcmVfYjlndjdBWUZvN2ZOWjJzYSIsIm93bmVySWQiOiJ0ZWFtX0g4NFdwalpENWpMTG40eEVlRmxBVG0yRiIsInBhdGhuYW1lIjoiKiIsIm9wZXJhdGlvbnMiOlsiZ2V0IiwiaGVhZCJdLCJ2YWxpZFVudGlsIjoxNzg2Njk3OTY2ODkzLCJpYXQiOjE3ODY2NTQ3NjcxMTF9.pUadoH4x3FgvZ28YqkVbJ59suHNLwpTBREOU6zoVjDc&vercel-blob-signature=4TaRZqVT_-lJ_teCMyDMEulvlhQcJYHL_tef1nTCbzk",
+    src: "https://b9gv7ayfo7fnz2sa.public.blob.vercel-storage.com/songs/1.mp4",
     mood: "City",
   },
   {
     label: "2",
-    src: "https://b9gv7ayfo7fnz2sa.private.blob.vercel-storage.com/songs/1.mp4?vercel-blob-valid-until=1786655024296&vercel-blob-delegation=eyJzdG9yZUlkIjoic3RvcmVfYjlndjdBWUZvN2ZOWjJzYSIsIm93bmVySWQiOiJ0ZWFtX0g4NFdwalpENWpMTG40eEVlRmxBVG0yRiIsInBhdGhuYW1lIjoiKiIsIm9wZXJhdGlvbnMiOlsiZ2V0IiwiaGVhZCJdLCJ2YWxpZFVudGlsIjoxNzg2Njk3OTY2ODkzLCJpYXQiOjE3ODY2NTQ3NjcxMTF9.pUadoH4x3FgvZ28YqkVbJ59suHNLwpTBREOU6zoVjDc&vercel-blob-signature=HuBA51o1lI8lp6oNyNMpIH5b03ZBLZRjw6GGKNJMIvQ",
+    // Switched to public subdomain and pointed to your second video asset
+    src: "https://vercel-storage.com",
     mood: "Scenic",
   },
 ]
