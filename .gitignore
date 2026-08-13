@@ -39,3 +39,5 @@ next-env.d.ts
 # videos and songs 
 assets/videos
 public/assets/videos/*
+.vercel
+.env*
