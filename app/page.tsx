@@ -6,7 +6,7 @@ import { Eye, EyeClosed } from "@phosphor-icons/react"
 import { useEffect, useRef, useState } from "react"
 
 const backgroundUrl =
-  "https://b9gv7ayfo7fnz2sa.private.blob.vercel-storage.com/background.png?vercel-blob-delegation=eyJzdG9yZUlkIjoic3RvcmVfYjlndjdBWUZvN2ZOWjJzYSIsIm93bmVySWQiOiJ0ZWFtX0g4NFdwalpENWpMTG40eEVlRmxBVG0yRiIsInBhdGhuYW1lIjoiKiIsIm9wZXJhdGlvbnMiOlsiZ2V0IiwiaGVhZCJdLCJ2YWxpZFVudGlsIjoxNzg2NzAwMDA2MzM4LCJpYXQiOjE3ODY2NTY4MDY1NzJ9.zNezCKkIY26Rn5EdJ8SQYmSqo6VDCnZg5bcmsPjEZ3M&vercel-blob-signature=p5aPeKtMHUah4viBbXHAliQCXbzRScZMY4IP_HdTnfA"
+  "https://2zrygdluatzpeedr.public.blob.vercel-storage.com/background.png"
 
 const videos = [
   {
@@ -70,7 +70,7 @@ export default function Page() {
 
   return (
     <main className="relative flex h-screen w-full flex-col overflow-hidden bg-zinc-950 font-sans text-white">
-      {/* Background Layer */}
+      {/* BACKGROUND */}
       <div className="absolute inset-0 z-0 bg-zinc-950">
         {isBackground ? (
           <img
@@ -99,124 +99,142 @@ export default function Page() {
         />
       </div>
 
-      {/* Video / Background Switcher */}
-      <div className="absolute bottom-8 left-8 z-[100] flex items-center gap-2">
+      {/* =========================================================
+          MOBILE VIDEO CONTROLS
+          ========================================================= */}
+      <div
+        className={`absolute bottom-[158px] left-3 z-[100] flex items-center gap-2 transition-all duration-500 sm:bottom-8 sm:left-8 ${
+          isFocusMode ? "pointer-events-none opacity-0" : "opacity-100"
+        }`}
+      >
         {videos.map((v, i) => (
           <button
             key={i}
             onClick={() => switchVideo(i, false)}
             title={v.mood}
-            className={`flex h-9 w-9 items-center justify-center rounded-full border text-[11px] font-bold backdrop-blur-md transition-all hover:scale-110 ${
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border text-[11px] font-bold backdrop-blur-md transition-all hover:scale-110 ${
               !isBackground && !isPlayAll && activeVideo === i
                 ? "border-amber-500 bg-amber-500/20 text-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.4)]"
-                : "border-white/10 bg-black/40 text-white/60 hover:border-white/30 hover:text-white"
+                : "border-white/10 bg-black/50 text-white/60 hover:border-white/30 hover:text-white"
             }`}
           >
             {v.label}
           </button>
         ))}
 
-        {/* Play All */}
+        {/* PLAY ALL */}
         <button
           onClick={() => switchVideo(0, true)}
           title="Play All"
-          className={`flex h-9 w-9 items-center justify-center rounded-full border text-base backdrop-blur-md transition-all hover:scale-110 ${
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border text-base backdrop-blur-md transition-all hover:scale-110 ${
             !isBackground && isPlayAll
               ? "border-amber-500 bg-amber-500/20 text-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.4)]"
-              : "border-white/10 bg-black/40 text-white/60 hover:border-white/30 hover:text-white"
+              : "border-white/10 bg-black/50 text-white/60 hover:border-white/30 hover:text-white"
           }`}
         >
           ∞
         </button>
 
-        {/* Background Image */}
+        {/* BACKGROUND */}
         <button
           onClick={showBackground}
           title="Background Image"
-          className={`flex h-9 w-9 items-center justify-center rounded-full border text-sm backdrop-blur-md transition-all hover:scale-110 ${
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border text-sm backdrop-blur-md transition-all hover:scale-110 ${
             isBackground
               ? "border-amber-500 bg-amber-500/20 text-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.4)]"
-              : "border-white/10 bg-black/40 text-white/60 hover:border-white/30 hover:text-white"
+              : "border-white/10 bg-black/50 text-white/60 hover:border-white/30 hover:text-white"
           }`}
         >
           ▧
         </button>
       </div>
 
-      {/* Focus Mode Toggle */}
+      {/* =========================================================
+          FOCUS MODE BUTTON
+          ========================================================= */}
       <button
-        onClick={() => setIsFocusMode(!isFocusMode)}
-        className="absolute right-8 bottom-8 z-[100] flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-black/40 text-white/70 shadow-xl backdrop-blur-md transition-all hover:scale-110 hover:bg-white/10 hover:text-white"
+        onClick={() => setIsFocusMode((prev) => !prev)}
+        className={`absolute right-3 bottom-[158px] z-[110] flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-black/60 text-white/80 shadow-xl backdrop-blur-md transition-all hover:scale-110 hover:bg-white/10 hover:text-white sm:right-8 sm:bottom-8 sm:h-12 sm:w-12 ${
+          isFocusMode ? "border-white/30 bg-white/10 text-white" : ""
+        }`}
         title={isFocusMode ? "Show Interface" : "Focus on Ride"}
       >
         {isFocusMode ? (
-          <EyeClosed size={24} weight="fill" />
+          <EyeClosed size={20} weight="fill" />
         ) : (
-          <Eye size={24} weight="fill" />
+          <Eye size={20} weight="fill" />
         )}
       </button>
 
-      {/* HUD */}
+      {/* =========================================================
+          HUD
+          ========================================================= */}
       <div
         className={`relative z-10 flex h-full w-full flex-col transition-opacity duration-700 ease-in-out ${
-          isFocusMode ? "opacity-0 hover:opacity-100" : "opacity-100"
+          isFocusMode ? "pointer-events-none opacity-0" : "opacity-100"
         }`}
       >
-        {/* Top Bar */}
-        <header className="flex w-full items-center justify-between p-8">
-          {/* Left */}
-          <div
-            className="flex items-center gap-4 transition-opacity duration-500"
-            style={{ opacity: isFocusMode ? 0 : 1 }}
-          >
+        {/* TOP BAR */}
+        <header className="flex w-full items-start justify-between p-4 sm:p-8">
+          {/* LEFT */}
+          <div className="flex items-center gap-4">
             <div className="flex flex-col">
-              <h1 className="text-[26px] leading-none font-black tracking-wide text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
+              <h1 className="max-w-[170px] text-[25px] leading-[0.9] font-black tracking-wide text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] sm:max-w-none sm:text-[26px]">
                 ऑटो की सवारी
               </h1>
-              <p className="mt-1.5 text-[11px] font-bold tracking-[0.3em] text-white/70 drop-shadow-md">
+
+              <p className="mt-2 max-w-[130px] text-[10px] leading-tight font-bold tracking-[0.25em] text-white/70 drop-shadow-md sm:max-w-none sm:text-[11px] sm:tracking-[0.3em]">
                 NH 48 • DELHI - MUMBAI
               </p>
             </div>
           </div>
 
-          {/* Right */}
+          {/* RIGHT */}
           <div className="flex flex-col items-end gap-2">
-            <div className="text-2xl font-bold tracking-wider drop-shadow-md">
+            <div className="text-xl font-bold tracking-wider drop-shadow-md sm:text-2xl">
               <span className="text-lg font-medium text-white/80">
                 {formattedTime}
               </span>
             </div>
 
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1.5 text-[11px] font-bold tracking-widest text-white/80 drop-shadow-sm">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="hidden items-center gap-1.5 text-[11px] font-bold tracking-widest text-white/80 drop-shadow-sm sm:flex">
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-orange-500 shadow-[0_0_8px_#f97316]" />
                 212 <span className="text-white/50">ABOARD</span>
               </div>
 
-              <button className="flex items-center gap-2 rounded-full border border-white/20 bg-black/40 px-4 py-1.5 text-xs font-medium backdrop-blur-md transition-colors hover:border-white/40 hover:bg-white/10">
-                <div className="flex h-5 w-5 items-center justify-center overflow-hidden rounded-full bg-white">
-                  <span className="text-[10px] font-bold text-black">You</span>
+              <button className="flex items-center gap-2 rounded-full border border-white/20 bg-black/40 px-3 py-1.5 text-xs font-medium backdrop-blur-md transition-colors hover:border-white/40 hover:bg-white/10 sm:px-4">
+                <div className="flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white">
+                  <span className="text-[9px] font-bold text-black">You</span>
                 </div>
-                Who&apos;s driving?
+
+                <span className="hidden sm:inline">Who&apos;s driving?</span>
+
+                <span className="sm:hidden">Driving?</span>
               </button>
             </div>
           </div>
         </header>
 
+        {/* SIDEBAR */}
         <RideSidebar />
+
+        {/* MUSIC PLAYER */}
         <MusicPlayer />
       </div>
 
-      {/* Center Title */}
+      {/* =========================================================
+          CENTER TITLE
+          ========================================================= */}
       <div
-        className={`absolute left-1/2 z-10 flex flex-col items-center justify-center transition-all duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        className={`absolute left-1/2 z-10 flex w-[90%] flex-col items-center justify-center text-center transition-all duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] ${
           isFocusMode
             ? "top-8 -translate-x-1/2 scale-[0.3]"
             : "top-[36%] -translate-x-1/2 -translate-y-1/2 scale-100"
         }`}
       >
         <p
-          className={`mb-5 text-[12px] font-bold tracking-[0.5em] text-amber-500/90 uppercase drop-shadow-md transition-opacity duration-500 ${
+          className={`mb-5 text-[10px] font-bold tracking-[0.35em] text-amber-500/90 uppercase drop-shadow-md transition-opacity duration-500 sm:text-[12px] sm:tracking-[0.5em] ${
             isFocusMode ? "opacity-0" : "opacity-100"
           }`}
         >
@@ -224,8 +242,11 @@ export default function Page() {
         </p>
 
         <h2
-          className="text-[60px] leading-none font-black tracking-tight text-white drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)]"
-          style={{ fontFamily: "sans-serif", lineHeight: "1" }}
+          className="text-[48px] leading-[0.9] font-black tracking-tight text-white drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)] sm:text-[60px] sm:leading-none"
+          style={{
+            fontFamily: "sans-serif",
+            lineHeight: "0.9",
+          }}
         >
           ऑटो की सवारी
         </h2>

@@ -1,4 +1,5 @@
 "use client"
+
 import { Song, playlist as staticPlaylist } from "@/components/player/playlist"
 import {
   ListDashes,
@@ -10,11 +11,13 @@ import {
   SpeakerHigh,
 } from "@phosphor-icons/react"
 import { useEffect, useRef, useState } from "react"
+
 export function MusicPlayer() {
   const [playlist, setPlaylist] = useState<Song[]>(staticPlaylist)
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
+
   const audioRef = useRef<HTMLAudioElement>(null)
 
   const [currentSongIndex, setCurrentSongIndex] = useState(0)
@@ -24,11 +27,17 @@ export function MusicPlayer() {
 
   useEffect(() => {
     let active = true
+
     async function loadPlaylist() {
       try {
         const res = await fetch("/api/songs")
-        if (!res.ok) throw new Error("Failed to fetch songs")
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch songs")
+        }
+
         const data = await res.json()
+
         if (active && Array.isArray(data) && data.length > 0) {
           setPlaylist(data)
         }
@@ -36,7 +45,9 @@ export function MusicPlayer() {
         console.error("Failed to load playlist dynamically:", err)
       }
     }
+
     loadPlaylist()
+
     return () => {
       active = false
     }
@@ -45,57 +56,82 @@ export function MusicPlayer() {
   const currentSong = playlist[currentSongIndex] || staticPlaylist[0]
 
   const handleNext = () => {
+    if (playlist.length === 0) return
+
     setCurrentSongIndex((prev) => (prev + 1) % playlist.length)
   }
 
   const handlePrev = () => {
+    if (playlist.length === 0) return
+
     setCurrentSongIndex(
       (prev) => (prev - 1 + playlist.length) % playlist.length
     )
   }
 
   const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (audioRef.current && duration > 0) {
-      const bounds = e.currentTarget.getBoundingClientRect()
-      const percent = (e.clientX - bounds.left) / bounds.width
-      audioRef.current.currentTime = percent * duration
-    }
+    if (!audioRef.current || duration <= 0) return
+
+    const bounds = e.currentTarget.getBoundingClientRect()
+
+    const percent = Math.max(
+      0,
+      Math.min(1, (e.clientX - bounds.left) / bounds.width)
+    )
+
+    audioRef.current.currentTime = percent * duration
   }
 
   useEffect(() => {
-    // Autoplay when song changes if it was already playing
     if (isPlaying && audioRef.current) {
       setTimeout(() => {
-        audioRef.current?.play().catch(console.error)
+        audioRef.current?.play().catch(() => {})
+
         const videoEl = document.querySelector("video")
-        if (videoEl) videoEl.play()
+
+        if (videoEl) {
+          videoEl.play().catch(() => {})
+        }
       }, 50)
     }
   }, [currentSongIndex])
 
   const togglePlay = () => {
-    if (audioRef.current) {
-      const videoEl = document.querySelector("video")
-      if (isPlaying) {
-        audioRef.current.pause()
-        if (videoEl) videoEl.pause()
-      } else {
-        audioRef.current.play()
-        if (videoEl) videoEl.play()
+    if (!audioRef.current) return
+
+    const videoEl = document.querySelector("video")
+
+    if (isPlaying) {
+      audioRef.current.pause()
+
+      if (videoEl) {
+        videoEl.pause()
       }
-      setIsPlaying(!isPlaying)
+
+      setIsPlaying(false)
+    } else {
+      audioRef.current.play().catch(() => {})
+
+      if (videoEl) {
+        videoEl.play().catch(() => {})
+      }
+
+      setIsPlaying(true)
     }
   }
 
   const toggleMute = () => {
-    if (audioRef.current) {
-      audioRef.current.muted = !isMuted
-      setIsMuted(!isMuted)
-    }
+    if (!audioRef.current) return
+
+    const newMutedState = !isMuted
+
+    audioRef.current.muted = newMutedState
+
+    setIsMuted(newMutedState)
   }
 
   const toggleRepeat = () => {
-    setIsRepeat(!isRepeat)
+    setIsRepeat((prev) => !prev)
   }
 
   useEffect(() => {
@@ -103,40 +139,36 @@ export function MusicPlayer() {
       if (
         e.target instanceof HTMLInputElement ||
         e.target instanceof HTMLTextAreaElement
-      )
+      ) {
         return
+      }
 
       if (e.code === "Space") {
         e.preventDefault()
-        if (audioRef.current) {
-          const videoEl = document.querySelector("video")
-          if (audioRef.current.paused) {
-            audioRef.current.play()
-            if (videoEl) videoEl.play()
-            setIsPlaying(true)
-          } else {
-            audioRef.current.pause()
-            if (videoEl) videoEl.pause()
-            setIsPlaying(false)
-          }
-        }
+        togglePlay()
       } else if (e.code === "ArrowRight") {
-        if (audioRef.current) audioRef.current.currentTime += 5
+        if (audioRef.current) {
+          audioRef.current.currentTime += 5
+        }
       } else if (e.code === "ArrowLeft") {
-        if (audioRef.current) audioRef.current.currentTime -= 5
+        if (audioRef.current) {
+          audioRef.current.currentTime -= 5
+        }
       } else if (e.code === "KeyN") {
-        setCurrentSongIndex((prev) => (prev + 1) % playlist.length)
+        handleNext()
       } else if (e.code === "KeyP") {
-        setCurrentSongIndex(
-          (prev) => (prev - 1 + playlist.length) % playlist.length
-        )
+        handlePrev()
       } else if (e.code === "KeyQ") {
         setIsQueueOpen((prev) => !prev)
       }
     }
+
     window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [playlist.length])
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [playlist.length, isPlaying])
 
   const handleTimeUpdate = () => {
     if (audioRef.current) {
@@ -151,20 +183,25 @@ export function MusicPlayer() {
   }
 
   const formatTime = (time: number) => {
-    if (isNaN(time)) return "0:00"
+    if (!Number.isFinite(time)) return "0:00"
+
     const min = Math.floor(time / 60)
     const sec = Math.floor(time % 60)
+
     return `${min}:${sec.toString().padStart(2, "0")}`
   }
 
-  const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0
+  const progressPercent =
+    duration > 0
+      ? Math.min(100, Math.max(0, (currentTime / duration) * 100))
+      : 0
 
   return (
-    <div className="fixed bottom-8 left-1/2 z-[150] flex -translate-x-1/2 flex-col items-center gap-4">
-      {/* Audio Element */}
+    <div className="fixed bottom-3 left-0 z-[150] flex w-full flex-col items-center gap-2 px-3 sm:bottom-8 sm:left-1/2 sm:w-auto sm:-translate-x-1/2 sm:px-0">
+      {/* AUDIO */}
       <audio
         ref={audioRef}
-        src={currentSong.src}
+        src={currentSong?.src}
         preload="metadata"
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
@@ -172,7 +209,7 @@ export function MusicPlayer() {
           if (isRepeat) {
             if (audioRef.current) {
               audioRef.current.currentTime = 0
-              audioRef.current.play()
+              audioRef.current.play().catch(() => {})
             }
           } else {
             handleNext()
@@ -180,38 +217,53 @@ export function MusicPlayer() {
         }}
       />
 
-      {/* Queue Popup */}
+      {/* =========================================================
+          QUEUE
+          ========================================================= */}
       {isQueueOpen && (
-        <div className="absolute right-0 bottom-full z-[200] mb-4 w-[300px] rounded-3xl border border-white/10 bg-[#1a0f0a]/95 p-4 shadow-[0_-20px_60px_rgba(0,0,0,0.8)] backdrop-blur-2xl">
-          <h4 className="mb-4 text-[10px] font-bold tracking-[0.2em] text-amber-500/80 uppercase">
+        <div className="absolute right-2 bottom-full mb-3 max-h-[55vh] w-[calc(100vw-24px)] overflow-y-auto rounded-2xl border border-white/10 bg-[#1a0f0a]/95 p-3 shadow-[0_-20px_60px_rgba(0,0,0,0.8)] backdrop-blur-2xl sm:right-0 sm:mb-4 sm:w-[300px] sm:rounded-3xl sm:p-4">
+          <h4 className="mb-3 text-[10px] font-bold tracking-[0.2em] text-amber-500/80 uppercase">
             Queue
           </h4>
-          <div className="flex flex-col gap-2">
+
+          <div className="flex flex-col gap-1.5">
             {playlist.map((song, idx) => (
               <button
-                key={idx}
+                key={`${song.title}-${idx}`}
                 onClick={() => {
                   setCurrentSongIndex(idx)
                   setIsQueueOpen(false)
                 }}
-                className={`group flex items-center gap-3 rounded-2xl p-2 text-left transition-all hover:bg-white/10 active:scale-95 ${idx === currentSongIndex ? "border border-amber-500/30 bg-white/5" : "border border-transparent"}`}
+                className={`group flex min-w-0 items-center gap-3 rounded-xl p-2 text-left transition-all active:scale-[0.98] ${
+                  idx === currentSongIndex
+                    ? "border border-amber-500/30 bg-white/5"
+                    : "border border-transparent hover:bg-white/10"
+                }`}
               >
                 <div
-                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors ${idx === currentSongIndex ? "bg-amber-500 text-black shadow-[0_0_15px_rgba(245,158,11,0.4)]" : "bg-white/10 text-white group-hover:bg-white/20"}`}
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
+                    idx === currentSongIndex
+                      ? "bg-amber-500 text-black"
+                      : "bg-white/10 text-white"
+                  }`}
                 >
                   {idx === currentSongIndex ? (
-                    <Play weight="fill" size={16} className="ml-0.5" />
+                    <Play weight="fill" size={16} />
                   ) : (
                     <span className="text-[10px] font-bold">{idx + 1}</span>
                   )}
                 </div>
-                <div className="flex flex-col overflow-hidden">
+
+                <div className="min-w-0 flex-1">
                   <span
-                    className={`truncate text-[13px] font-bold transition-colors ${idx === currentSongIndex ? "text-amber-400" : "text-white group-hover:text-amber-500/80"}`}
+                    className={`block truncate text-[13px] font-bold ${
+                      idx === currentSongIndex ? "text-amber-400" : "text-white"
+                    }`}
                   >
                     {song.title}
                   </span>
-                  <span className="truncate text-[10px] font-medium text-white/50">
+
+                  <span className="block truncate text-[10px] font-medium text-white/50">
                     {song.artist}
                   </span>
                 </div>
@@ -221,127 +273,167 @@ export function MusicPlayer() {
         </div>
       )}
 
-      {/* Main Player Pill */}
-      <div className="flex h-[74px] w-[580px] items-center gap-4 rounded-[37px] border border-white/10 bg-[#23150c]/85 px-3 shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl">
-        {/* Album Art */}
-        <div className="relative h-[56px] w-[56px] shrink-0 overflow-hidden rounded-full border border-orange-500/30 shadow-[0_0_15px_rgba(234,88,12,0.2)]">
+      {/* =========================================================
+          PLAYER
+          ========================================================= */}
+      <div className="flex h-[72px] w-full max-w-[580px] items-center gap-2 rounded-[22px] border border-white/10 bg-[#23150c]/90 px-2.5 py-2 shadow-[0_20px_50px_rgba(0,0,0,0.6)] backdrop-blur-xl sm:h-[74px] sm:w-[580px] sm:gap-4 sm:rounded-[37px] sm:px-3 sm:py-0">
+        {/* ALBUM ART */}
+        <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full border border-orange-500/30 sm:h-14 sm:w-14">
           <img
             src="https://images.unsplash.com/photo-1619983081563-430f63602796?w=200&h=200&fit=crop"
             alt="Album Art"
-            className={`h-full w-full object-cover ${isPlaying ? "animate-[spin_4s_linear_infinite]" : ""}`}
+            className={`h-full w-full object-cover ${
+              isPlaying ? "animate-[spin_4s_linear_infinite]" : ""
+            }`}
           />
         </div>
 
-        {/* Song Info & Progress */}
-        <div className="mt-1 flex flex-1 flex-col justify-center gap-1.5 truncate">
-          <div className="truncate">
-            <h3 className="truncate text-[15px] font-bold tracking-wide text-white">
-              {currentSong.title}
+        {/* SONG INFO */}
+        <div className="min-w-0 flex-1 overflow-hidden">
+          <div className="min-w-0">
+            <h3 className="truncate text-[12px] font-bold tracking-wide text-white sm:text-[15px]">
+              {currentSong?.title}
             </h3>
-            <p className="truncate text-[11px] font-medium text-white/50">
-              {currentSong.artist}
+
+            <p className="truncate text-[9px] font-medium text-white/50 sm:text-[11px]">
+              {currentSong?.artist}
             </p>
           </div>
 
-          <div className="flex items-center gap-3 text-[10px] font-medium text-white/40">
-            <span className="w-6 text-right">{formatTime(currentTime)}</span>
-            {/* Progress Bar (Fare meter style) */}
+          {/* PROGRESS */}
+          <div className="mt-1.5 flex min-w-0 items-center gap-2 text-[8px] font-medium text-white/40 sm:gap-3 sm:text-[10px]">
+            <span className="hidden w-6 shrink-0 text-right sm:block">
+              {formatTime(currentTime)}
+            </span>
+
             <div
-              className="group relative h-2 flex-1 cursor-pointer overflow-hidden rounded-full bg-black/50"
+              className="group relative h-1.5 min-w-0 flex-1 cursor-pointer overflow-hidden rounded-full bg-black/50 sm:h-2"
               onClick={handleSeek}
             >
               <div
-                className="absolute top-0 left-0 h-full rounded-full bg-gradient-to-r from-amber-600 to-orange-500 shadow-[0_0_8px_rgba(234,88,12,0.8)] transition-all duration-150"
-                style={{ width: `${progressPercent}%` }}
+                className="absolute top-0 left-0 h-full rounded-full bg-gradient-to-r from-amber-600 to-orange-500 shadow-[0_0_8px_rgba(234,88,12,0.8)]"
+                style={{
+                  width: `${progressPercent}%`,
+                }}
               />
+
               <div className="absolute top-0 h-full w-full bg-white/20 opacity-0 transition-opacity group-hover:opacity-100" />
             </div>
-            <span className="w-6">{formatTime(duration)}</span>
+
+            <span className="hidden w-6 shrink-0 sm:block">
+              {formatTime(duration)}
+            </span>
           </div>
         </div>
 
-        {/* Controls */}
-        <div className="flex items-center gap-5 pr-4 text-[#a3948b]">
+        {/* CONTROLS */}
+        <div className="flex shrink-0 items-center gap-1.5 text-[#a3948b] sm:gap-5 sm:pr-4">
+          {/* PREVIOUS */}
           <button
             onClick={handlePrev}
-            className="transition-colors hover:scale-110 hover:text-white active:scale-95"
+            className="hidden transition-all hover:scale-110 hover:text-white active:scale-95 sm:block"
+            aria-label="Previous"
           >
             <SkipBack weight="fill" size={18} />
           </button>
 
+          {/* PLAY */}
           <button
             onClick={togglePlay}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-all hover:scale-105 active:scale-95"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-all hover:scale-105 active:scale-95 sm:h-10 sm:w-10"
+            aria-label={isPlaying ? "Pause" : "Play"}
           >
             {isPlaying ? (
-              <Pause weight="fill" size={18} />
+              <Pause weight="fill" size={17} />
             ) : (
-              <span className="flex items-center justify-center">
-                <Play weight="fill" size={18} style={{ marginLeft: "2px" }} />
-              </span>
+              <Play weight="fill" size={17} className="ml-0.5" />
             )}
           </button>
 
+          {/* NEXT */}
           <button
             onClick={handleNext}
-            className="transition-colors hover:scale-110 hover:text-white active:scale-95"
+            className="transition-all hover:scale-110 hover:text-white active:scale-95"
+            aria-label="Next"
           >
             <SkipForward weight="fill" size={18} />
           </button>
 
+          {/* MUTE */}
           <button
             onClick={toggleMute}
-            className={`transition-colors hover:scale-110 active:scale-95 ${isMuted ? "text-white/40" : "ml-1 hover:text-white"}`}
+            className={`hidden transition-all hover:scale-110 active:scale-95 sm:block ${
+              isMuted ? "text-white/40" : "hover:text-white"
+            }`}
+            aria-label="Mute"
           >
             <SpeakerHigh weight="fill" size={18} />
           </button>
 
+          {/* REPEAT */}
           <button
             onClick={toggleRepeat}
-            className={`transition-colors hover:scale-110 active:scale-95 ${isRepeat ? "text-amber-500" : "hover:text-white"}`}
+            className={`hidden transition-all hover:scale-110 active:scale-95 sm:block ${
+              isRepeat ? "text-amber-500" : "hover:text-white"
+            }`}
+            aria-label="Repeat"
           >
             <Repeat weight="bold" size={18} />
           </button>
 
+          {/* QUEUE */}
           <button
-            onClick={() => setIsQueueOpen(!isQueueOpen)}
-            className={`transition-colors hover:scale-110 active:scale-95 ${isQueueOpen ? "text-white" : "hover:text-white"}`}
+            onClick={() => setIsQueueOpen((prev) => !prev)}
+            className={`transition-all hover:scale-110 active:scale-95 ${
+              isQueueOpen ? "text-white" : "hover:text-white"
+            }`}
+            aria-label="Queue"
           >
             <ListDashes weight="bold" size={18} />
           </button>
         </div>
       </div>
 
-      {/* Keyboard Shortcuts */}
-      <div className="flex items-center gap-6 font-mono text-[9px] font-bold tracking-[0.2em] text-white/30 uppercase">
+      {/* =========================================================
+          KEYBOARD SHORTCUTS
+          ========================================================= */}
+      <div className="hidden items-center gap-6 font-mono text-[9px] font-bold tracking-[0.2em] text-white/30 uppercase md:flex">
         <div className="flex items-center gap-2">
           <span className="rounded-md border border-white/10 bg-black/40 px-2 py-1">
             Space
           </span>
           <span>PLAY / PAUSE</span>
         </div>
+
         <div className="flex items-center gap-1.5">
           <span className="rounded-md border border-white/10 bg-black/40 px-2 py-1">
             ←
           </span>
+
           <span className="rounded-md border border-white/10 bg-black/40 px-2 py-1">
             →
           </span>
+
           <span className="ml-1">SEEK</span>
         </div>
+
         <div className="flex items-center gap-1.5">
           <span className="rounded-md border border-white/10 bg-black/40 px-2 py-1">
             N
           </span>
+
           <span className="rounded-md border border-white/10 bg-black/40 px-2 py-1">
             P
           </span>
+
           <span className="ml-1">TRACK</span>
         </div>
+
         <div className="flex items-center gap-2">
           <span className="rounded-md border border-white/10 bg-black/40 px-2 py-1">
             Q
           </span>
+
           <span>QUEUE</span>
         </div>
       </div>
