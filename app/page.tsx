@@ -1,8 +1,8 @@
 "use client"
-
 import { MusicPlayer } from "@/components/player/MusicPlayer"
 import { RideSidebar } from "@/components/share/RideSidebar"
 import { Eye, EyeClosed } from "@phosphor-icons/react"
+import { Analytics } from "@vercel/analytics/next"
 import { useEffect, useRef, useState } from "react"
 
 const backgroundUrl =
@@ -71,6 +71,7 @@ export default function Page() {
   return (
     <main className="relative flex h-screen w-full flex-col overflow-hidden bg-zinc-950 font-sans text-white">
       {/* BACKGROUND */}
+      <Analytics />
       <div className="absolute inset-0 z-0 bg-zinc-950">
         {isBackground ? (
           <img
@@ -181,11 +182,7 @@ export default function Page() {
             <div className="flex flex-col">
               <h1 className="max-w-[170px] text-[25px] leading-[0.9] font-black tracking-wide text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] sm:max-w-none sm:text-[26px]">
                 ऑटो की सवारी
-              </h1>
-
-              <p className="mt-2 max-w-[130px] text-[10px] leading-tight font-bold tracking-[0.25em] text-white/70 drop-shadow-md sm:max-w-none sm:text-[11px] sm:tracking-[0.3em]">
-                NH 48 • DELHI - MUMBAI
-              </p>
+              </h1> 
             </div>
           </div>
 
@@ -195,29 +192,12 @@ export default function Page() {
               <span className="text-lg font-medium text-white/80">
                 {formattedTime}
               </span>
-            </div>
-
-            <div className="flex items-center gap-2 sm:gap-4">
-              <div className="hidden items-center gap-1.5 text-[11px] font-bold tracking-widest text-white/80 drop-shadow-sm sm:flex">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-orange-500 shadow-[0_0_8px_#f97316]" />
-                212 <span className="text-white/50">ABOARD</span>
-              </div>
-
-              <button className="flex items-center gap-2 rounded-full border border-white/20 bg-black/40 px-3 py-1.5 text-xs font-medium backdrop-blur-md transition-colors hover:border-white/40 hover:bg-white/10 sm:px-4">
-                <div className="flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white">
-                  <span className="text-[9px] font-bold text-black">You</span>
-                </div>
-
-                <span className="hidden sm:inline">Who&apos;s driving?</span>
-
-                <span className="sm:hidden">Driving?</span>
-              </button>
-            </div>
+            </div> 
           </div>
         </header>
 
         {/* SIDEBAR */}
-        <RideSidebar />
+        {/* <RideSidebar /> */}
 
         {/* MUSIC PLAYER */}
         <MusicPlayer />
